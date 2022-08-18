@@ -1,7 +1,7 @@
 module View exposing (viewConsole)
 
 import Console exposing (Argument(..), Command, Console, ConsoleMsg(..))
-import Element exposing (Element, below, column, el, fill, height, mouseOver, none, padding, pointer, px, rgb255, rgba255, row, spacing, text, transparent, width)
+import Element exposing (Element, below, centerX, column, el, fill, height, mouseOver, none, padding, pointer, px, rgb255, rgba255, row, spacing, text, transparent, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events exposing (onClick, onFocus)
@@ -69,9 +69,30 @@ input label placeholder value event validationError =
         [ Element.width <| px 100
         , Element.padding sizing.small
         , Background.color <| rgba255 255 255 255 0
-        , Element.focused [ Border.glow (rgba255 0 0 0 0) 0, Border.color <| rgb255 255 0 150 ]
+        , Element.focused [ Border.glow (rgba255 0 0 0 0) 0, Border.color <| rgb255 200 200 0 ]
+        , Border.color <|
+            case validationError of
+                Just error ->
+                    rgb255 255 0 150
+
+                Nothing ->
+                    rgb255 0 255 150
         , Border.widthEach { top = 0, right = 0, bottom = 1, left = 0 }
         , Border.rounded 0
+        , Element.below <|
+            case validationError of
+                Just err ->
+                    el
+                        [ centerX
+                        , padding sizing.small
+                        , Background.color <| rgba255 50 50 50 0.5
+                        , Border.color <| rgb255 20 20 20
+                        , Border.rounded 3
+                        ]
+                        (text err)
+
+                Nothing ->
+                    Element.none
         ]
         { onChange = event
         , text = value
@@ -125,7 +146,7 @@ viewArgInput index arg =
                 ArgString l v ->
                     ( l, "String", v )
     in
-    input label type_ (Maybe.withDefault "" value) (UpdateArgument index) Nothing
+    input label type_ (Maybe.withDefault "" value) (UpdateArgument index) (Just "invalid input")
 
 
 viewArg : Argument -> Element (ConsoleMsg cmd)
