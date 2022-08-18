@@ -63,6 +63,24 @@ button label event =
         }
 
 
+validationTooltip : Maybe String -> Element.Attribute msg
+validationTooltip value =
+    Element.below <|
+        case value of
+            Just err ->
+                el
+                    [ centerX
+                    , padding sizing.small
+                    , Background.color <| rgba255 50 50 50 0.5
+                    , Border.color <| rgb255 20 20 20
+                    , Border.rounded 3
+                    ]
+                    (text err)
+
+            Nothing ->
+                Element.none
+
+
 input : String -> String -> String -> (String -> ConsoleMsg cmd) -> Maybe String -> Element (ConsoleMsg cmd)
 input label placeholder value event validationError =
     Input.text
@@ -79,20 +97,7 @@ input label placeholder value event validationError =
                     rgb255 0 255 150
         , Border.widthEach { top = 0, right = 0, bottom = 1, left = 0 }
         , Border.rounded 0
-        , Element.below <|
-            case validationError of
-                Just err ->
-                    el
-                        [ centerX
-                        , padding sizing.small
-                        , Background.color <| rgba255 50 50 50 0.5
-                        , Border.color <| rgb255 20 20 20
-                        , Border.rounded 3
-                        ]
-                        (text err)
-
-                Nothing ->
-                    Element.none
+        , validationTooltip validationError
         ]
         { onChange = event
         , text = value
