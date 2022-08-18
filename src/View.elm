@@ -156,10 +156,6 @@ viewCommandInput command =
         , width fill
         , Font.color <| rgb255 200 200 200
         , onEnter <| Execute command
-
-        -- , pointer
-        -- , onClick (SetCurrentCommand <| Just command)
-        -- , mouseOver [ Background.color <| rgb255 150 150 150 ]
         ]
         [ text command.description
         , row [ spacing 10 ] (List.indexedMap viewArgInput command.arguments)
