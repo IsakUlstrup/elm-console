@@ -8,7 +8,9 @@ import Element.Events exposing (onClick, onFocus)
 import Element.Font as Font
 import Element.Input as Input
 import Element.Region exposing (aside)
-import Html.Attributes exposing (type_)
+import Html.Attributes exposing (id, type_)
+import Html.Events
+import Json.Decode as Decode
 
 
 
@@ -27,6 +29,23 @@ sizing =
     , large = 20
     , xlarge = 40
     }
+
+
+onEnter : msg -> Element.Attribute msg
+onEnter msg =
+    Element.htmlAttribute
+        (Html.Events.on "keyup"
+            (Decode.field "key" Decode.string
+                |> Decode.andThen
+                    (\key ->
+                        if key == "Enter" then
+                            Decode.succeed msg
+
+                        else
+                            Decode.fail "Not the enter key"
+                    )
+            )
+        )
 
 
 button : String -> ConsoleMsg cmd -> Element (ConsoleMsg cmd)
@@ -71,6 +90,13 @@ viewArgInput index arg =
             else
                 "False"
 
+        elementId =
+            if index == 0 then
+                Element.htmlAttribute <| id Console.firstArgId
+
+            else
+                Element.htmlAttribute <| id (String.fromInt index)
+
         ( label, type_, value ) =
             case arg of
                 ArgInt l v ->
@@ -82,7 +108,7 @@ viewArgInput index arg =
                 ArgString l v ->
                     ( l, "String", v )
     in
-    Input.text [ width <| px 100 ]
+    Input.text [ width <| px 100, elementId ]
         { onChange = UpdateArgument index
         , text = Maybe.withDefault "" value
         , placeholder = Just <| Input.placeholder [] (text type_)
@@ -129,6 +155,7 @@ viewCommandInput command =
         , spacing sizing.medium
         , width fill
         , Font.color <| rgb255 200 200 200
+        , onEnter <| Execute command
 
         -- , pointer
         -- , onClick (SetCurrentCommand <| Just command)
