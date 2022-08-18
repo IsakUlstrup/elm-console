@@ -9,6 +9,7 @@ module Console exposing
     , addString
     , consoleId
     , executeCommand
+    , filterId
     , firstArgId
     , focusFirstArgument
     , getCommandPresets

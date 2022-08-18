@@ -8,7 +8,7 @@ import Element.Events exposing (onClick, onFocus)
 import Element.Font as Font
 import Element.Input as Input
 import Element.Region exposing (aside)
-import Html.Attributes exposing (id, type_)
+import Html.Attributes
 import Html.Events
 import Json.Decode as Decode
 
@@ -69,7 +69,7 @@ button label event =
 
 viewCommandFilter : Console cmd -> Element (ConsoleMsg cmd)
 viewCommandFilter console =
-    row [ width fill, height fill ]
+    row [ width fill, height fill, Element.htmlAttribute <| Html.Attributes.id Console.filterId ]
         [ button "x" HidePresets
         , Input.text [ onFocus ShowPresets, height fill ]
             { onChange = SetCommandFilter
@@ -92,10 +92,10 @@ viewArgInput index arg =
 
         elementId =
             if index == 0 then
-                Element.htmlAttribute <| id Console.firstArgId
+                Element.htmlAttribute <| Html.Attributes.id Console.firstArgId
 
             else
-                Element.htmlAttribute <| id (String.fromInt index)
+                Element.htmlAttribute <| Html.Attributes.id (String.fromInt index)
 
         ( label, type_, value ) =
             case arg of
