@@ -1,7 +1,7 @@
 module View exposing (viewConsole)
 
 import Console exposing (Argument(..), Command, Console, ConsoleMsg(..))
-import Element exposing (Element, below, column, el, fill, height, mouseOver, none, padding, pointer, px, rgb255, row, spacing, text, width)
+import Element exposing (Element, below, column, el, fill, height, mouseOver, none, padding, pointer, px, rgb255, rgba255, row, spacing, text, transparent, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Events exposing (onClick, onFocus)
@@ -63,6 +63,23 @@ button label event =
         }
 
 
+input : String -> String -> String -> (String -> ConsoleMsg cmd) -> Maybe String -> Element (ConsoleMsg cmd)
+input label placeholder value event validationError =
+    Input.text
+        [ Element.width <| px 100
+        , Element.padding sizing.small
+        , Background.color <| rgba255 255 255 255 0
+        , Element.focused [ Border.glow (rgba255 0 0 0 0) 0, Border.color <| rgb255 255 0 150 ]
+        , Border.widthEach { top = 0, right = 0, bottom = 1, left = 0 }
+        , Border.rounded 0
+        ]
+        { onChange = event
+        , text = value
+        , placeholder = Just <| Input.placeholder [] (text (label ++ ": " ++ placeholder))
+        , label = Input.labelLeft [] (text label)
+        }
+
+
 
 ---- VIEW ----
 
@@ -108,12 +125,7 @@ viewArgInput index arg =
                 ArgString l v ->
                     ( l, "String", v )
     in
-    Input.text [ width <| px 100, elementId ]
-        { onChange = UpdateArgument index
-        , text = Maybe.withDefault "" value
-        , placeholder = Just <| Input.placeholder [] (text type_)
-        , label = Input.labelLeft [] (text label)
-        }
+    input label type_ (Maybe.withDefault "" value) (UpdateArgument index) Nothing
 
 
 viewArg : Argument -> Element (ConsoleMsg cmd)
@@ -151,14 +163,13 @@ viewCommandPreset command =
 viewCommandInput : Command cmd -> Element (ConsoleMsg cmd)
 viewCommandInput command =
     row
-        [ padding sizing.medium
-        , spacing sizing.medium
+        [ spacing sizing.xlarge
         , width fill
         , Font.color <| rgb255 200 200 200
         , onEnter <| Execute command
         ]
         [ text command.description
-        , row [ spacing 10 ] (List.indexedMap viewArgInput command.arguments)
+        , row [ spacing sizing.xlarge ] (List.indexedMap viewArgInput command.arguments)
         ]
 
 
@@ -185,7 +196,7 @@ viewConsole console =
         ]
         (case console.currentCommand of
             Just cmd ->
-                row [ width fill, height fill ]
+                row [ width fill, height fill, spacing sizing.medium ]
                     [ button "x" (SetCurrentCommand Nothing)
                     , viewCommandInput cmd
                     , button "Go!" (Execute cmd)
