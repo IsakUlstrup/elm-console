@@ -2,6 +2,7 @@ module Console exposing
     ( Argument
     , ArgumentValue(..)
     , Command
+    , CommandValidator
     , Console
     , ConsoleMsg(..)
     , addBool
@@ -56,6 +57,10 @@ filterId =
 
 
 ---- TYPES ----
+
+
+type alias CommandValidator msg =
+    List ArgumentValue -> Result String msg
 
 
 type alias Argument =

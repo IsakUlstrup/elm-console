@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Console exposing (Argument, ArgumentValue(..), Command, Console, ConsoleMsg(..))
+import Console exposing (Argument, ArgumentValue(..), Command, CommandValidator, Console, ConsoleMsg(..))
 import Element
 import Html exposing (Html, div, text)
 import Html.Attributes
@@ -55,36 +55,36 @@ type Msg
     | ConsoleMsg (ConsoleMsg Msg)
 
 
-incrementValdiator : List ArgumentValue -> Result String Msg
+incrementValdiator : CommandValidator Msg
 incrementValdiator _ =
     Ok Inc
 
 
-backgroundColorValidator : List ArgumentValue -> Result String Msg
+backgroundColorValidator : CommandValidator Msg
 backgroundColorValidator arguments =
     case arguments of
         [ Console.ArgString (Just color) ] ->
-            SetSolidBackground color |> Ok
+            Ok <| SetSolidBackground color
 
         _ ->
             Err "CmdBgColor: invalid arguments"
 
 
-backgroundColorRgbValidator : List ArgumentValue -> Result String Msg
+backgroundColorRgbValidator : CommandValidator Msg
 backgroundColorRgbValidator arguments =
     case arguments of
         [ Console.ArgInt (Just red), Console.ArgInt (Just green), Console.ArgInt (Just blue) ] ->
-            SetRGBBackground red green blue |> Ok
+            Ok <| SetRGBBackground red green blue
 
         _ ->
             Err "CmdBgColorRGB: invalid arguments"
 
 
-flagValidator : List ArgumentValue -> Result String Msg
+flagValidator : CommandValidator Msg
 flagValidator arguments =
     case arguments of
         [ Console.ArgBool (Just flag) ] ->
-            SetFlag flag |> Ok
+            Ok <| SetFlag flag
 
         _ ->
             Err "SetFlag: invalid arguments"
