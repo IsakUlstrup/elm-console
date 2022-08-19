@@ -1,6 +1,6 @@
 module View exposing (viewConsole)
 
-import Console exposing (Argument(..), Command, Console, ConsoleMsg(..))
+import Console exposing (Argument, ArgumentValue(..), Command, Console, ConsoleMsg(..))
 import Element exposing (Element, below, centerX, column, el, fill, height, mouseOver, none, padding, pointer, px, rgb255, rgba255, row, spacing, text, transparent, width)
 import Element.Background as Background
 import Element.Border as Border
@@ -141,32 +141,32 @@ viewArgInput index arg =
                 Element.htmlAttribute <| Html.Attributes.id (String.fromInt index)
 
         ( label, type_, value ) =
-            case arg of
-                ArgInt l v ->
-                    ( l, "Int", v |> Maybe.map String.fromInt )
+            case arg.value of
+                ArgInt v ->
+                    ( arg.name, "Int", v |> Maybe.map String.fromInt )
 
-                ArgBool l v ->
-                    ( l, "Bool", v |> Maybe.map boolString )
+                ArgBool v ->
+                    ( arg.name, "Bool", v |> Maybe.map boolString )
 
-                ArgString l v ->
-                    ( l, "String", v )
+                ArgString v ->
+                    ( arg.name, "String", v )
     in
-    input label type_ (Maybe.withDefault "" value) (UpdateArgument index) (Just "invalid input")
+    input label type_ (Maybe.withDefault "" value) (UpdateArgument index) arg.validationError
 
 
 viewArg : Argument -> Element (ConsoleMsg cmd)
 viewArg arg =
     let
         ( label, type_ ) =
-            case arg of
-                ArgInt l _ ->
-                    ( l, "Int" )
+            case arg.value of
+                ArgInt _ ->
+                    ( arg.name, "Int" )
 
-                ArgBool l _ ->
-                    ( l, "Bool" )
+                ArgBool _ ->
+                    ( arg.name, "Bool" )
 
-                ArgString l _ ->
-                    ( l, "String" )
+                ArgString _ ->
+                    ( arg.name, "String" )
     in
     el [] (text (label ++ " (" ++ type_ ++ ")"))
 

@@ -1,5 +1,6 @@
 module Console exposing
-    ( Argument(..)
+    ( Argument
+    , ArgumentValue(..)
     , Command
     , Console
     , ConsoleMsg(..)
@@ -55,23 +56,25 @@ filterId =
 
 
 ---- TYPES ----
--- type alias Argument_ =
---     { value : Argument
---     , name : String
---     , validationError : Maybe String
---     }
 
 
-type Argument
-    = ArgInt String (Maybe Int)
-    | ArgString String (Maybe String)
-    | ArgBool String (Maybe Bool)
+type alias Argument =
+    { value : ArgumentValue
+    , name : String
+    , validationError : Maybe String
+    }
+
+
+type ArgumentValue
+    = ArgInt (Maybe Int)
+    | ArgString (Maybe String)
+    | ArgBool (Maybe Bool)
 
 
 type alias Command cmd =
     { description : String
     , arguments : List Argument
-    , validate : List Argument -> Result String cmd
+    , validate : List ArgumentValue -> Result String cmd
     }
 
 
@@ -101,7 +104,7 @@ type ConsoleMsg cmd
 
 {-| Init for arguments builder
 -}
-init : String -> (List Argument -> Result String cmd) -> Command cmd
+init : String -> (List ArgumentValue -> Result String cmd) -> Command cmd
 init description validator =
     Command description [] validator
 
@@ -110,21 +113,21 @@ init description validator =
 -}
 addInt : String -> Command cmd -> Command cmd
 addInt label command =
-    { command | arguments = command.arguments ++ [ ArgInt label Nothing ] }
+    { command | arguments = command.arguments ++ [ Argument (ArgInt Nothing) label Nothing ] }
 
 
 {-| Add a new string argument with provided label
 -}
 addString : String -> Command cmd -> Command cmd
 addString label command =
-    { command | arguments = command.arguments ++ [ ArgString label Nothing ] }
+    { command | arguments = command.arguments ++ [ Argument (ArgString Nothing) label Nothing ] }
 
 
 {-| Add a new bool argument with provided label
 -}
 addBool : String -> Command cmd -> Command cmd
 addBool label command =
-    { command | arguments = command.arguments ++ [ ArgBool label Nothing ] }
+    { command | arguments = command.arguments ++ [ Argument (ArgBool Nothing) label Nothing ] }
 
 
 
@@ -151,14 +154,14 @@ updateAtIndex target f command =
 
 argHasValue : Argument -> Bool
 argHasValue arg =
-    case arg of
-        ArgBool _ (Just _) ->
+    case arg.value of
+        ArgBool (Just _) ->
             True
 
-        ArgInt _ (Just _) ->
+        ArgInt (Just _) ->
             True
 
-        ArgString _ (Just _) ->
+        ArgString (Just _) ->
             True
 
         _ ->
@@ -172,7 +175,7 @@ isValid command =
 
 validate : Command cmd -> Result String cmd
 validate command =
-    command.validate command.arguments
+    command.validate (List.map .value command.arguments)
 
 
 
@@ -254,15 +257,15 @@ updateCurrentCommandArgument index argInput console =
                     Nothing
 
         updateIfValidInput i a =
-            case a of
-                ArgInt label _ ->
-                    ArgInt label (String.toInt i)
+            case a.value of
+                ArgInt _ ->
+                    { a | value = ArgInt (String.toInt i) }
 
-                ArgBool label _ ->
-                    ArgBool label (stringToBool i)
+                ArgBool _ ->
+                    { a | value = ArgBool (stringToBool i) }
 
-                ArgString label _ ->
-                    ArgString label (Just i)
+                ArgString _ ->
+                    { a | value = ArgString (Just i) }
     in
     { console | currentCommand = console.currentCommand |> Maybe.map (updateAtIndex index (updateIfValidInput argInput)) }
 
