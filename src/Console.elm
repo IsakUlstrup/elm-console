@@ -13,7 +13,6 @@ module Console exposing
     , viewConsole
     )
 
-import Continue exposing (Continue(..))
 import Dict exposing (Dict)
 import Html exposing (Html, aside, div, form, input, label, li, p, text, ul)
 import Html.Attributes exposing (autocomplete, class, for, id, name, required, type_, value)

@@ -1,8 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Console exposing (ArgumentInput, ConsoleMsg, Message(..))
-import Continue
+import Console exposing (ConsoleMsg, Message(..))
 import Html exposing (Html, h1, h3, main_, section, text)
 
 
