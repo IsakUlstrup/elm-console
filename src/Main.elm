@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Console exposing (ConsoleMsg, Message(..))
+import Console exposing (Message)
 import Html exposing (Html, h1, h3, main_, section, text)
 
 
@@ -15,8 +15,12 @@ counterMotdMsg =
         \s ->
             Console.argInt "Counter" <|
                 \i ->
-                    Console.constructor <|
-                        SetCounterAndMotd i s
+                    Console.constructor <| SetCounterAndMotd i s
+
+
+incrementMsg : Message Msg
+incrementMsg =
+    Console.argInt "Amount" <| \i -> Console.constructor <| Increment i
 
 
 type alias Model =
@@ -31,7 +35,7 @@ init _ =
     ( Model
         (Console.new
             |> Console.addMessage "Set message & counter" counterMotdMsg
-            |> Console.addMessage "Set message & counter2" counterMotdMsg
+            |> Console.addMessage "Increment counter" incrementMsg
             |> Console.addMessage "Set message & counter3" counterMotdMsg
             |> Console.addMessage "Set message & counter4" counterMotdMsg
             |> Console.addMessage "Set message & counter5" counterMotdMsg
@@ -49,16 +53,12 @@ init _ =
 type Msg
     = Increment Int
     | SetCounterAndMotd Int String
-    | NoOp
     | ConsoleMsg (Console.ConsoleMsg Msg)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
-
         Increment v ->
             ( { model | counter = model.counter + v }, Cmd.none )
 

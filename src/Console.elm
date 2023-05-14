@@ -1,12 +1,12 @@
 module Console exposing
     ( ArgumentInput
     , Console
+    , ConsoleInput
     , ConsoleMsg
     , Message(..)
     , addMessage
     , argInt
     , argString
-    , construct
     , constructor
     , new
     , update
@@ -15,7 +15,7 @@ module Console exposing
 
 import Dict exposing (Dict)
 import Html exposing (Html, aside, div, form, input, label, li, p, text, ul)
-import Html.Attributes exposing (autocomplete, class, for, id, name, required, type_, value)
+import Html.Attributes exposing (autocomplete, class, for, id, required, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 
 
@@ -111,21 +111,21 @@ setInput input args =
                 ArgInt { i | value = input.value } m
 
             else
-                ArgInt { i | value = i.value } <| \x -> setInput input (m x)
+                ArgInt i <| \x -> setInput input (m x)
 
         ArgBool i m ->
             if i.name == input.name then
                 ArgBool { i | value = input.value } m
 
             else
-                ArgBool { i | value = i.value } <| \x -> setInput input (m x)
+                ArgBool i <| \x -> setInput input (m x)
 
         ArgString i m ->
             if i.name == input.name then
                 ArgString { i | value = input.value } m
 
             else
-                ArgString { i | value = i.value } <| \x -> setInput input (m x)
+                ArgString i <| \x -> setInput input (m x)
 
         Constructor _ ->
             args
