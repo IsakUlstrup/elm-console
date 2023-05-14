@@ -1,26 +1,12 @@
 module Main exposing (..)
 
 import Browser
-import Console exposing (Message)
+import Console exposing (Message(..))
 import Html exposing (Html, h1, h3, main_, section, text)
 
 
 
 -- MODEL
-
-
-counterMotdMsg : Message Msg
-counterMotdMsg =
-    Console.argString "Message" <|
-        \s ->
-            Console.argInt "Counter" <|
-                \i ->
-                    Console.constructor <| SetCounterAndMotd i s
-
-
-incrementMsg : Message Msg
-incrementMsg =
-    Console.argInt "Amount" <| \i -> Console.constructor <| Increment i
 
 
 type alias Model =
@@ -34,11 +20,17 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( Model
         (Console.new
-            |> Console.addMessage "Set message & counter" counterMotdMsg
-            |> Console.addMessage "Increment counter" incrementMsg
-            |> Console.addMessage "Set message & counter3" counterMotdMsg
-            |> Console.addMessage "Set message & counter4" counterMotdMsg
-            |> Console.addMessage "Set message & counter5" counterMotdMsg
+            |> Console.addMessage "Set message & counter"
+                (Console.constructor2
+                    SetCounterAndMotd
+                    (Console.argInt "Counter")
+                    (Console.argString "Message")
+                )
+            |> Console.addMessage "Increment counter"
+                (Console.constructor1
+                    Increment
+                    (Console.argInt "Amount")
+                )
         )
         0
         "Hello"

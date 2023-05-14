@@ -7,7 +7,8 @@ module Console exposing
     , addMessage
     , argInt
     , argString
-    , constructor
+    , constructor1
+    , constructor2
     , new
     , update
     , viewConsole
@@ -35,6 +36,16 @@ type Message a
 constructor : a -> Message a
 constructor c =
     Constructor c
+
+
+constructor2 : (a -> b -> c) -> ((a -> d) -> e) -> ((b -> Message c) -> d) -> e
+constructor2 c x y =
+    x <| \a -> y <| \b -> constructor <| c a b
+
+
+constructor1 : (a -> b) -> ((a -> Message b) -> c) -> c
+constructor1 c x =
+    x <| \a -> constructor <| c a
 
 
 argInt : String -> (Int -> Message a) -> Message a
