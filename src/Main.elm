@@ -1,93 +1,57 @@
 module Main exposing (..)
 
 import Browser
-import Console exposing (Argument, ArgumentValue(..), Command, CommandValidator, Console, ConsoleMsg(..))
-import Element
-import Html exposing (Html, div, text)
-import Html.Attributes
-import View
+import Console exposing (ArgumentInput, ConsoleMsg, Message(..))
+import Continue
+import Html exposing (Html, h1, h3, main_, section, text)
 
 
 
----- MODEL ----
+-- MODEL
+
+
+counterMotdMsg : Message Msg
+counterMotdMsg =
+    Console.argString "Message" <|
+        \s ->
+            Console.argInt "Counter" <|
+                \i ->
+                    Console.constructor <|
+                        SetCounterAndMotd i s
 
 
 type alias Model =
-    { backgroundColor : String
+    { console : Console.Console Msg
     , counter : Int
-    , flag : Bool
-    , console : Console Msg
+    , motd : String
     }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( Model
-        "white"
+        (Console.new
+            |> Console.addMessage "Set message & counter" counterMotdMsg
+            |> Console.addMessage "Set message & counter2" counterMotdMsg
+            |> Console.addMessage "Set message & counter3" counterMotdMsg
+            |> Console.addMessage "Set message & counter4" counterMotdMsg
+            |> Console.addMessage "Set message & counter5" counterMotdMsg
+        )
         0
-        False
-        (Console.new commandPresets)
+        "Hello"
     , Cmd.none
     )
 
 
 
----- UPDATE ----
-
-
-commandPresets : List (Command Msg)
-commandPresets =
-    [ Console.init "Increment counter" (always <| Ok Inc)
-    , Console.init "Decrement counter" (always <| Ok Dec)
-    , Console.init "Flag" flagValidator |> Console.addBool "Flag"
-    , Console.init "Background color" backgroundColorValidator |> Console.addString "Color"
-    , Console.init "Background color" backgroundColorRgbValidator |> Console.addInt "Red" |> Console.addInt "Green" |> Console.addInt "Blue"
-    ]
+-- UPDATE
 
 
 type Msg
-    = NoOp
-    | Inc
-    | Dec
-    | SetFlag Bool
-    | SetSolidBackground String
-    | SetRGBBackground Int Int Int
-    | ConsoleMsg (ConsoleMsg Msg)
-
-
-incrementValdiator : CommandValidator Msg
-incrementValdiator _ =
-    Ok Inc
-
-
-backgroundColorValidator : CommandValidator Msg
-backgroundColorValidator arguments =
-    case arguments of
-        [ Console.ArgString (Just color) ] ->
-            Ok <| SetSolidBackground color
-
-        _ ->
-            Err "CmdBgColor: invalid arguments"
-
-
-backgroundColorRgbValidator : CommandValidator Msg
-backgroundColorRgbValidator arguments =
-    case arguments of
-        [ Console.ArgInt (Just red), Console.ArgInt (Just green), Console.ArgInt (Just blue) ] ->
-            Ok <| SetRGBBackground red green blue
-
-        _ ->
-            Err "CmdBgColorRGB: invalid arguments"
-
-
-flagValidator : CommandValidator Msg
-flagValidator arguments =
-    case arguments of
-        [ Console.ArgBool (Just flag) ] ->
-            Ok <| SetFlag flag
-
-        _ ->
-            Err "SetFlag: invalid arguments"
+    = Increment Int
+    | SetCounterAndMotd Int String
+    | NoOp
+    | ConsoleMsg (Console.ConsoleMsg Msg)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -96,64 +60,42 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        Inc ->
-            ( { model | counter = model.counter + 1 }, Cmd.none )
+        Increment v ->
+            ( { model | counter = model.counter + v }, Cmd.none )
 
-        Dec ->
-            ( { model | counter = model.counter - 1 }, Cmd.none )
+        SetCounterAndMotd count message ->
+            ( { model | counter = count, motd = message }, Cmd.none )
 
-        SetFlag flag ->
-            ( { model | flag = flag }, Cmd.none )
-
-        SetSolidBackground color ->
-            ( { model | backgroundColor = color }, Cmd.none )
-
-        SetRGBBackground red green blue ->
-            ( { model
-                | backgroundColor =
-                    "rgb("
-                        ++ String.fromInt red
-                        ++ ", "
-                        ++ String.fromInt green
-                        ++ ", "
-                        ++ String.fromInt blue
-                        ++ ")"
-              }
-            , Cmd.none
-            )
-
-        ConsoleMsg consoleMsg ->
+        ConsoleMsg cmsg ->
             let
-                -- get new console state, a maybe message and a command
-                ( console, mmsg, cmd ) =
-                    Console.update consoleMsg model.console
+                ( newConsole, mmsg ) =
+                    Console.update cmsg model.console
             in
             case mmsg of
-                Just m ->
-                    { model | console = console } |> update m
-
                 Nothing ->
-                    ( { model | console = console }, Cmd.map ConsoleMsg cmd )
+                    ( { model | console = newConsole }, Cmd.none )
+
+                Just m ->
+                    { model | console = newConsole } |> update m
 
 
 
--- consoleUpdate consoleMsg model
----- VIEW ----
+-- VIEW
 
 
 view : Model -> Html Msg
 view model =
-    div
-        []
-        [ Html.map ConsoleMsg (Element.layout [] (View.viewConsole model.console))
-        , Html.main_ [ Html.Attributes.style "background" model.backgroundColor ]
-            [ text ("Counter: " ++ String.fromInt model.counter)
+    main_ []
+        [ Html.map ConsoleMsg (Console.viewConsole model.console)
+        , section []
+            [ h1 [] [ text <| "Counter: " ++ String.fromInt model.counter ]
+            , h3 [] [ text <| "Message: " ++ model.motd ]
             ]
         ]
 
 
 
----- SUBS ----
+-- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
@@ -162,15 +104,14 @@ subscriptions _ =
 
 
 
--- Sub.map ConsoleMsg Console.keyListener
----- PROGRAM ----
+-- MAIN
 
 
 main : Program () Model Msg
 main =
     Browser.element
-        { view = view
-        , init = \_ -> init
+        { init = init
+        , view = view
         , update = update
         , subscriptions = subscriptions
         }
