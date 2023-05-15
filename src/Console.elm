@@ -15,7 +15,7 @@ module Console exposing
     )
 
 import Dict exposing (Dict)
-import Html exposing (Html, aside, div, form, input, label, li, p, text, ul)
+import Html exposing (Html, aside, div, form, hr, input, label, li, p, text, ul)
 import Html.Attributes exposing (autocomplete, class, for, id, required, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 
@@ -66,12 +66,13 @@ type ConsoleInput a
 type alias Console a =
     { input : ConsoleInput a
     , messages : Dict String (Message a)
+    , messageHistory : List ( String, Message a )
     }
 
 
 new : Console a
 new =
-    Console (Filter "") Dict.empty
+    Console (Filter "") Dict.empty []
 
 
 addMessage : String -> Message a -> Console a -> Console a
@@ -168,10 +169,10 @@ update msg console =
 
         ExecMsg ->
             case console.input of
-                MessagePreset _ m ->
+                MessagePreset name m ->
                     case construct m of
                         Ok mm ->
-                            ( console, Just mm )
+                            ( { console | messageHistory = ( name, m ) :: console.messageHistory |> List.take 5 }, Just mm )
 
                         Err _ ->
                             ( console, Nothing )
@@ -206,13 +207,16 @@ construct msg =
             Ok a
 
 
+stringFromBool : Bool -> String
+stringFromBool b =
+    if b then
+        "true"
 
--- stringFromBool : Bool -> String
--- stringFromBool b =
---     if b then
---         "true"
---     else
---         "false"
+    else
+        "false"
+
+
+
 -- VIEW
 
 
@@ -288,19 +292,40 @@ viewArguments : List (Html (ConsoleMsg a)) -> Message msg -> List (Html (Console
 viewArguments a g =
     case g of
         ArgInt i k ->
-            viewArguments
-                ((text <| i.name ++ "(Int)") :: a)
-                (k 0)
+            case parseInt i.value of
+                Ok int ->
+                    viewArguments
+                        ((text <| i.name ++ ": " ++ String.fromInt int) :: a)
+                        (k int)
+
+                Err _ ->
+                    viewArguments
+                        ((text <| i.name ++ "(Int)") :: a)
+                        (k 0)
 
         ArgBool i k ->
-            viewArguments
-                ((text <| i.name ++ "(Bool)") :: a)
-                (k False)
+            case parseBool i.value of
+                Ok bool ->
+                    viewArguments
+                        ((text <| i.name ++ ": " ++ stringFromBool bool) :: a)
+                        (k bool)
+
+                Err _ ->
+                    viewArguments
+                        ((text <| i.name ++ "(Bool)") :: a)
+                        (k False)
 
         ArgString i k ->
-            viewArguments
-                ((text <| i.name ++ "(String)") :: a)
-                (k "")
+            case parseString i.value of
+                Ok string ->
+                    viewArguments
+                        ((text <| i.name ++ ": " ++ string) :: a)
+                        (k string)
+
+                Err _ ->
+                    viewArguments
+                        ((text <| i.name ++ "(Bool)") :: a)
+                        (k "")
 
         Constructor _ ->
             a
@@ -308,7 +333,14 @@ viewArguments a g =
 
 viewMessagePreset : ( String, Message a ) -> Html (ConsoleMsg a)
 viewMessagePreset ( n, m ) =
-    li [ onClick <| SetMessage n m ] [ text n, p [] (viewArguments [] m |> List.reverse |> List.intersperse (text " > ")) ]
+    li [ onClick <| SetMessage n m ]
+        [ p [] [ text n ]
+        , p []
+            (viewArguments [] m
+                |> List.reverse
+                |> List.intersperse (text " > ")
+            )
+        ]
 
 
 filterPass : String -> String -> v -> Bool
@@ -332,6 +364,10 @@ viewConsole console =
             Filter f ->
                 form [ class "filter" ]
                     [ input [ onInput <| SetFilter, value f ] []
-                    , ul [ class "filter-matches" ] (List.map viewMessagePreset (console.messages |> Dict.filter (filterPass f) |> Dict.toList))
+                    , div [ class "message-presets" ]
+                        [ ul [ class "history" ] (List.map viewMessagePreset console.messageHistory)
+                        , hr [] []
+                        , ul [ class "filter-matches" ] (List.map viewMessagePreset (console.messages |> Dict.filter (filterPass f) |> Dict.toList))
+                        ]
                     ]
         ]
