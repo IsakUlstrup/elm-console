@@ -16,8 +16,8 @@ module Console exposing
 
 import Dict exposing (Dict)
 import Html exposing (Html, aside, div, form, hr, input, label, li, p, text, ul)
-import Html.Attributes exposing (autocomplete, class, for, id, required, type_, value)
-import Html.Events exposing (onClick, onInput, onSubmit)
+import Html.Attributes exposing (autocomplete, class, for, id, placeholder, required, type_, value)
+import Html.Events exposing (onClick, onFocus, onInput, onSubmit)
 
 
 type alias ArgumentInput =
@@ -67,12 +67,13 @@ type alias Console a =
     { input : ConsoleInput a
     , messages : Dict String (Message a)
     , messageHistory : List ( String, Message a )
+    , showPresets : Bool
     }
 
 
 new : Console a
 new =
-    Console (Filter "") Dict.empty []
+    Console (Filter "") Dict.empty [] False
 
 
 addMessage : String -> Message a -> Console a -> Console a
@@ -147,6 +148,7 @@ type ConsoleMsg a
     = UpdateMessage ArgumentInput
     | SetFilter String
     | SetMessage String (Message a)
+    | ShowPresets Bool
     | ExecMsg
 
 
@@ -167,12 +169,20 @@ update msg console =
         SetMessage n m ->
             ( { console | input = MessagePreset n m }, Nothing )
 
+        ShowPresets flag ->
+            ( { console | showPresets = flag }, Nothing )
+
         ExecMsg ->
             case console.input of
                 MessagePreset name m ->
                     case construct m of
                         Ok mm ->
-                            ( { console | messageHistory = ( name, m ) :: console.messageHistory |> List.take 5 }, Just mm )
+                            ( { console
+                                | messageHistory = ( name, m ) :: console.messageHistory |> List.take 5
+                                , input = Filter ""
+                              }
+                            , Just mm
+                            )
 
                         Err _ ->
                             ( console, Nothing )
@@ -363,11 +373,28 @@ viewConsole console =
 
             Filter f ->
                 form [ class "filter" ]
-                    [ input [ onInput <| SetFilter, value f ] []
-                    , div [ class "message-presets" ]
-                        [ ul [ class "history" ] (List.map viewMessagePreset console.messageHistory)
-                        , hr [] []
-                        , ul [ class "filter-matches" ] (List.map viewMessagePreset (console.messages |> Dict.filter (filterPass f) |> Dict.toList))
+                    [ input
+                        [ value "x"
+                        , type_ "button"
+                        , onClick <| ShowPresets False
                         ]
+                        []
+                    , input
+                        [ onInput <| SetFilter
+                        , value f
+                        , type_ "search"
+                        , onFocus <| ShowPresets True
+                        , placeholder "Filter messages"
+                        ]
+                        []
+                    , div [ class "message-presets" ] <|
+                        if console.showPresets then
+                            [ ul [ class "history" ] (List.map viewMessagePreset console.messageHistory)
+                            , hr [] []
+                            , ul [ class "filter-matches" ] (List.map viewMessagePreset (console.messages |> Dict.filter (filterPass f) |> Dict.toList))
+                            ]
+
+                        else
+                            []
                     ]
         ]
