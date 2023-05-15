@@ -20,7 +20,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( Model
         (Console.new
-            |> Console.addMessage "Set message & counter"
+            |> Console.addMessage "Set counter & message"
                 (Console.constructor2
                     SetCounterAndMotd
                     (Console.argInt "Counter")

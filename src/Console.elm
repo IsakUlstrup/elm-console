@@ -284,9 +284,31 @@ viewCommand a g =
             a
 
 
+viewArguments : List (Html (ConsoleMsg a)) -> Message msg -> List (Html (ConsoleMsg a))
+viewArguments a g =
+    case g of
+        ArgInt i k ->
+            viewArguments
+                ((text <| i.name ++ "(Int)") :: a)
+                (k 0)
+
+        ArgBool i k ->
+            viewArguments
+                ((text <| i.name ++ "(Bool)") :: a)
+                (k False)
+
+        ArgString i k ->
+            viewArguments
+                ((text <| i.name ++ "(String)") :: a)
+                (k "")
+
+        Constructor _ ->
+            a
+
+
 viewMessagePreset : ( String, Message a ) -> Html (ConsoleMsg a)
 viewMessagePreset ( n, m ) =
-    li [ onClick <| SetMessage n m ] [ text n ]
+    li [ onClick <| SetMessage n m ] [ text n, p [] (viewArguments [] m |> List.reverse |> List.intersperse (text " > ")) ]
 
 
 filterPass : String -> String -> v -> Bool
