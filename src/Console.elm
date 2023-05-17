@@ -15,7 +15,7 @@ module Console exposing
     )
 
 import Dict exposing (Dict)
-import Html exposing (Html, aside, div, form, hr, input, label, li, p, text, ul)
+import Html exposing (Html, aside, div, form, hr, input, label, li, p, small, text, ul)
 import Html.Attributes exposing (autocomplete, class, for, id, placeholder, required, type_, value)
 import Html.Events exposing (onClick, onFocus, onInput, onSubmit)
 
@@ -180,6 +180,7 @@ update msg console =
                             ( { console
                                 | messageHistory = ( name, m ) :: console.messageHistory |> List.take 5
                                 , input = Filter ""
+                                , showPresets = False
                               }
                             , Just mm
                             )
@@ -345,7 +346,7 @@ viewMessagePreset : ( String, Message a ) -> Html (ConsoleMsg a)
 viewMessagePreset ( n, m ) =
     li [ onClick <| SetMessage n m ]
         [ p [] [ text n ]
-        , p []
+        , small []
             (viewArguments [] m
                 |> List.reverse
                 |> List.intersperse (text " > ")
