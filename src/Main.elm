@@ -110,7 +110,6 @@ gradientString gradient =
                 ++ "%, "
                 ++ String.fromFloat l
                 ++ "%)"
-                |> Debug.log "hsl"
     in
     "linear-gradient(-20deg,"
         ++ colorString gradient.hue gradient.saturation gradient.lightness
