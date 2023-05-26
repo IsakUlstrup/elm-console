@@ -3,16 +3,31 @@ module Main exposing (..)
 import Browser
 import Console exposing (Message(..))
 import Html exposing (Html, h1, h3, main_, section, text)
+import Html.Attributes
 
 
 
 -- MODEL
 
 
+type alias Gradient =
+    { hue : Float
+    , saturation : Float
+    , lightness : Float
+    , step : Float
+    }
+
+
+setHue : Float -> Gradient -> Gradient
+setHue hue gradient =
+    { gradient | hue = hue }
+
+
 type alias Model =
     { console : Console.Console Msg
     , counter : Int
     , motd : String
+    , background : Gradient
     }
 
 
@@ -34,6 +49,7 @@ init _ =
         )
         0
         "Hello"
+        (Gradient 200 100 50 100)
     , Cmd.none
     )
 
@@ -45,6 +61,7 @@ init _ =
 type Msg
     = Increment Int
     | SetCounterAndMotd Int String
+    | SetBackgroundHue Float
     | ConsoleMsg (Console.ConsoleMsg Msg)
 
 
@@ -56,6 +73,9 @@ update msg model =
 
         SetCounterAndMotd count message ->
             ( { model | counter = count, motd = message }, Cmd.none )
+
+        SetBackgroundHue hue ->
+            ( { model | background = setHue hue model.background }, Cmd.none )
 
         ConsoleMsg cmsg ->
             let
@@ -74,11 +94,34 @@ update msg model =
 -- VIEW
 
 
+gradientString : Gradient -> String
+gradientString gradient =
+    let
+        colorString h s l =
+            "hsl("
+                ++ String.fromFloat h
+                ++ ", "
+                ++ String.fromFloat s
+                ++ "%, "
+                ++ String.fromFloat l
+                ++ "%)"
+                |> Debug.log "hsl"
+    in
+    "linear-gradient(-20deg,"
+        ++ colorString gradient.hue gradient.saturation gradient.lightness
+        ++ ", "
+        ++ colorString (gradient.hue + gradient.step) gradient.saturation gradient.lightness
+        ++ ")"
+
+
 view : Model -> Html Msg
 view model =
     main_ []
         [ Html.map ConsoleMsg (Console.viewConsole model.console)
-        , section []
+        , section
+            [ Html.Attributes.id "app"
+            , Html.Attributes.style "background" (gradientString model.background)
+            ]
             [ h1 [] [ text <| "Counter: " ++ String.fromInt model.counter ]
             , h3 [] [ text <| "Message: " ++ model.motd ]
             ]
