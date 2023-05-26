@@ -17,7 +17,7 @@ module Console exposing
 import Dict exposing (Dict)
 import Html exposing (Html, aside, div, form, hr, input, label, li, p, small, text, ul)
 import Html.Attributes exposing (autocomplete, class, for, id, placeholder, required, type_, value)
-import Html.Events exposing (onClick, onFocus, onInput, onSubmit)
+import Html.Events exposing (onBlur, onClick, onFocus, onInput, onMouseDown, onSubmit)
 
 
 type alias ArgumentInput =
@@ -41,6 +41,11 @@ constructor c =
 constructor2 : (a -> b -> c) -> ((a -> d) -> e) -> ((b -> Message c) -> d) -> e
 constructor2 c x y =
     x <| \a -> y <| \b -> constructor <| c a b
+
+
+constructor3 : (a -> b -> c -> d) -> ((a -> e) -> f) -> ((b -> g) -> e) -> ((c -> Message d) -> g) -> f
+constructor3 c x y z =
+    x <| \a -> y <| \b -> z <| \d -> constructor <| c a b d
 
 
 constructor1 : (a -> b) -> ((a -> Message b) -> c) -> c
@@ -344,7 +349,7 @@ viewArguments a g =
 
 viewMessagePreset : ( String, Message a ) -> Html (ConsoleMsg a)
 viewMessagePreset ( n, m ) =
-    li [ onClick <| SetMessage n m ]
+    li [ onMouseDown <| SetMessage n m ]
         [ p [] [ text n ]
         , small []
             (viewArguments [] m
@@ -377,7 +382,7 @@ viewConsole console =
                     [ input
                         [ value "x"
                         , type_ "button"
-                        , onClick <| ShowPresets False
+                        , onClick <| SetFilter ""
                         ]
                         []
                     , input
@@ -385,6 +390,7 @@ viewConsole console =
                         , value f
                         , type_ "search"
                         , onFocus <| ShowPresets True
+                        , onBlur <| ShowPresets False
                         , placeholder "Filter messages"
                         ]
                         []
