@@ -20,7 +20,7 @@ type alias Gradient =
 
 setHue : Float -> Gradient -> Gradient
 setHue hue gradient =
-    { gradient | hue = hue }
+    { gradient | hue = clamp 0 255 hue }
 
 
 type alias Model =
@@ -45,6 +45,11 @@ init _ =
                 (Console.constructor1
                     Increment
                     (Console.argInt "Amount")
+                )
+            |> Console.addMessage "Set Background Hue"
+                (Console.constructor1
+                    SetBackgroundHue
+                    (Console.argFloat "Hue (0-255)")
                 )
         )
         0

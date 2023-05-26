@@ -5,6 +5,7 @@ module Console exposing
     , ConsoleMsg
     , Message(..)
     , addMessage
+    , argFloat
     , argInt
     , argString
     , constructor1
@@ -29,6 +30,7 @@ type alias ArgumentInput =
 
 type Message a
     = ArgInt ArgumentInput (Int -> Message a)
+    | ArgFloat ArgumentInput (Float -> Message a)
     | ArgBool ArgumentInput (Bool -> Message a)
     | ArgString ArgumentInput (String -> Message a)
     | Constructor a
@@ -57,6 +59,11 @@ constructor3 c x y z =
 argInt : String -> (Int -> Message a) -> Message a
 argInt name x =
     ArgInt (ArgumentInput name "") x
+
+
+argFloat : String -> (Float -> Message a) -> Message a
+argFloat name x =
+    ArgFloat (ArgumentInput name "") x
 
 
 argString : String -> (String -> Message a) -> Message a
@@ -115,10 +122,12 @@ parseInt i =
     String.toInt i |> Result.fromMaybe "Invalid integer"
 
 
+parseFloat : String -> Result String Float
+parseFloat f =
+    String.toFloat f |> Result.fromMaybe "Invalid float"
 
--- parseFloat : String -> Result String Float
--- parseFloat f =
---     String.toFloat f |> Result.fromMaybe "Invalid float"
+
+
 -- UPDATE
 
 
@@ -131,6 +140,13 @@ setInput input args =
 
             else
                 ArgInt i <| \x -> setInput input (m x)
+
+        ArgFloat i m ->
+            if i.name == input.name then
+                ArgFloat { i | value = input.value } m
+
+            else
+                ArgFloat i <| \x -> setInput input (m x)
 
         ArgBool i m ->
             if i.name == input.name then
@@ -209,6 +225,11 @@ construct msg =
             Result.andThen
                 (\x -> construct (k x))
                 (parseInt n.value)
+
+        ArgFloat n k ->
+            Result.andThen
+                (\x -> construct (k x))
+                (parseFloat n.value)
 
         ArgBool b k ->
             Result.andThen
@@ -291,6 +312,11 @@ viewCommand a g =
                 (viewIntInput i :: a)
                 (k 0)
 
+        ArgFloat i k ->
+            viewCommand
+                (viewIntInput i :: a)
+                (k 0)
+
         ArgBool i k ->
             viewCommand
                 (viewBoolInput i :: a)
@@ -318,6 +344,18 @@ viewArguments a g =
                 Err _ ->
                     viewArguments
                         ((text <| i.name ++ "(Int)") :: a)
+                        (k 0)
+
+        ArgFloat i k ->
+            case parseFloat i.value of
+                Ok float ->
+                    viewArguments
+                        ((text <| i.name ++ ": " ++ String.fromFloat float) :: a)
+                        (k float)
+
+                Err _ ->
+                    viewArguments
+                        ((text <| i.name ++ "(Float)") :: a)
                         (k 0)
 
         ArgBool i k ->
