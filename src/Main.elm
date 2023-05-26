@@ -20,7 +20,12 @@ type alias Gradient =
 
 setHue : Float -> Gradient -> Gradient
 setHue hue gradient =
-    { gradient | hue = clamp 0 255 hue }
+    { gradient | hue = clamp 0 360 hue }
+
+
+setStep : Float -> Gradient -> Gradient
+setStep step gradient =
+    { gradient | step = clamp 0 100 step }
 
 
 type alias Model =
@@ -49,12 +54,17 @@ init _ =
             |> Console.addMessage "Set Background Hue"
                 (Console.constructor1
                     SetBackgroundHue
-                    (Console.argFloat "Hue (0-255)")
+                    (Console.argFloat "Hue")
+                )
+            |> Console.addMessage "Set Background Step"
+                (Console.constructor1
+                    SetBackgroundStep
+                    (Console.argFloat "Step")
                 )
         )
         0
         "Hello"
-        (Gradient 200 100 50 100)
+        (Gradient 200 75 50 100)
     , Cmd.none
     )
 
@@ -67,6 +77,7 @@ type Msg
     = Increment Int
     | SetCounterAndMotd Int String
     | SetBackgroundHue Float
+    | SetBackgroundStep Float
     | ConsoleMsg (Console.ConsoleMsg Msg)
 
 
@@ -81,6 +92,9 @@ update msg model =
 
         SetBackgroundHue hue ->
             ( { model | background = setHue hue model.background }, Cmd.none )
+
+        SetBackgroundStep step ->
+            ( { model | background = setStep step model.background }, Cmd.none )
 
         ConsoleMsg cmsg ->
             let
