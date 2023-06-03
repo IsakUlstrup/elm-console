@@ -18,7 +18,7 @@ module Console exposing
 
 import Dict exposing (Dict)
 import Html exposing (Html, aside, div, form, hr, input, label, li, p, small, text, ul)
-import Html.Attributes exposing (autocomplete, class, for, id, placeholder, required, type_, value)
+import Html.Attributes exposing (autocomplete, autofocus, class, for, id, placeholder, required, step, type_, value)
 import Html.Events exposing (onBlur, onClick, onFocus, onInput, onMouseDown, onSubmit)
 
 
@@ -258,8 +258,8 @@ stringFromBool b =
 -- VIEW
 
 
-viewStringInput : ArgumentInput -> Html (ConsoleMsg a)
-viewStringInput input_ =
+viewStringInput : Int -> ArgumentInput -> Html (ConsoleMsg a)
+viewStringInput index input_ =
     div [ class "argument", class "string" ]
         [ label [ for input_.name ] [ text <| input_.name ++ " (String)" ]
         , input
@@ -267,14 +267,15 @@ viewStringInput input_ =
             , id input_.name
             , required True
             , autocomplete False
+            , autofocus <| index == 0
             , onInput <| \i -> UpdateMessage { input_ | value = i }
             ]
             []
         ]
 
 
-viewIntInput : ArgumentInput -> Html (ConsoleMsg a)
-viewIntInput input_ =
+viewIntInput : Int -> ArgumentInput -> Html (ConsoleMsg a)
+viewIntInput index input_ =
     div [ class "argument", class "int" ]
         [ label [ for input_.name ] [ text <| input_.name ++ " (Integer)" ]
         , input
@@ -283,14 +284,33 @@ viewIntInput input_ =
             , required True
             , type_ "number"
             , autocomplete False
+            , autofocus <| index == 0
             , onInput <| \i -> UpdateMessage { input_ | value = i }
             ]
             []
         ]
 
 
-viewBoolInput : ArgumentInput -> Html (ConsoleMsg a)
-viewBoolInput input_ =
+viewFloatInput : Int -> ArgumentInput -> Html (ConsoleMsg a)
+viewFloatInput index input_ =
+    div [ class "argument", class "float" ]
+        [ label [ for input_.name ] [ text <| input_.name ++ " (Float)" ]
+        , input
+            [ value input_.value
+            , id input_.name
+            , required True
+            , type_ "number"
+            , autocomplete False
+            , autofocus <| index == 0
+            , step "any"
+            , onInput <| \i -> UpdateMessage { input_ | value = i }
+            ]
+            []
+        ]
+
+
+viewBoolInput : Int -> ArgumentInput -> Html (ConsoleMsg a)
+viewBoolInput index input_ =
     div [ class "argument", class "bool" ]
         [ label [ for input_.name ] [ text <| input_.name ++ " (Boolean)" ]
         , input
@@ -298,33 +318,34 @@ viewBoolInput input_ =
             , id input_.name
             , required True
             , autocomplete False
+            , autofocus <| index == 0
             , onInput <| \i -> UpdateMessage { input_ | value = i }
             ]
             []
         ]
 
 
-viewCommand : List (Html (ConsoleMsg a)) -> Message msg -> List (Html (ConsoleMsg a))
-viewCommand a g =
+viewCommand : Int -> List (Html (ConsoleMsg a)) -> Message msg -> List (Html (ConsoleMsg a))
+viewCommand index a g =
     case g of
         ArgInt i k ->
-            viewCommand
-                (viewIntInput i :: a)
+            viewCommand (index + 1)
+                (viewIntInput index i :: a)
                 (k 0)
 
         ArgFloat i k ->
-            viewCommand
-                (viewIntInput i :: a)
+            viewCommand (index + 1)
+                (viewFloatInput index i :: a)
                 (k 0)
 
         ArgBool i k ->
-            viewCommand
-                (viewBoolInput i :: a)
+            viewCommand (index + 1)
+                (viewBoolInput index i :: a)
                 (k False)
 
         ArgString i k ->
-            viewCommand
-                (viewStringInput i :: a)
+            viewCommand (index + 1)
+                (viewStringInput index i :: a)
                 (k "")
 
         Constructor _ ->
@@ -412,7 +433,7 @@ viewConsole console =
                     ([ input [ onClick <| SetFilter "", type_ "button", value "<" ] []
                      , p [] [ text n ]
                      ]
-                        ++ (viewCommand [] m |> List.reverse)
+                        ++ (viewCommand 0 [] m |> List.reverse)
                         ++ [ input [ type_ "submit", value "Go!" ] [] ]
                     )
 
