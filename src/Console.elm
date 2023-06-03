@@ -400,7 +400,7 @@ viewArguments a g =
 
                 Err _ ->
                     viewArguments
-                        ((text <| i.name ++ "(Bool)") :: a)
+                        ((text <| i.name ++ "(String)") :: a)
                         (k "")
 
         Constructor _ ->
