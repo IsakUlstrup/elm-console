@@ -97,16 +97,12 @@ update msg model =
             ( { model | background = setStep step model.background }, Cmd.none )
 
         ConsoleMsg cmsg ->
-            let
-                ( newConsole, mmsg ) =
-                    Console.update cmsg model.console
-            in
-            case mmsg of
-                Nothing ->
-                    ( { model | console = newConsole }, Cmd.none )
+            case Console.update cmsg model.console of
+                ( console, Nothing ) ->
+                    ( { model | console = console }, Cmd.none )
 
-                Just m ->
-                    { model | console = newConsole } |> update m
+                ( console, Just m ) ->
+                    { model | console = console } |> update m
 
 
 
