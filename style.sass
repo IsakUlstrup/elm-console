@@ -35,29 +35,32 @@
 
     font-family: monospace
     color: #262626
-    background: linear-gradient(rgb(255, 255, 255), rgb(209, 209, 209))
+    background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(209, 209, 209, 0.5))
     box-shadow: 0rem 0rem 1rem rgba(0, 0, 0, 0.4)
 
     input
         padding: 0.5rem
         border-radius: 0.3rem
         border: 1px solid magenta
+        background: rgba(255, 255, 255, 0.5)
 
     .message-presets
-        color: beige
-        position: absolute
+        color: #262626
+        // position: absolute
         left: 0
         right: 0
         top: 2.5rem
         display: flex
         flex-direction: column
+        gap: 0.2rem
         li
             list-style: none
             padding: 0.5rem
-            background: rgba(0, 0, 0, 0.5)
+            // background: rgba(0, 0, 0, 0.5)
             cursor: pointer
+            border-radius: 0.2rem
             &:hover
-                background: rgba(255, 255, 255, 0.5)
+                background: rgba(0, 0, 0, 0.2)
                 color: #262626
 
 .message-preset
@@ -73,8 +76,12 @@
 .filter
     width: 100%
     display: flex
+    flex-direction: column
     position: relative
-    gap: 0.5rem
+    // gap: 0.5rem
 
-    input[type=search]
-        flex: auto
+    .filter-input
+        display: flex
+        gap: 0.5rem
+        input[type=search]
+            flex: auto

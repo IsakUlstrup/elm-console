@@ -397,21 +397,23 @@ viewConsole console =
 
             Filter f ->
                 form [ class "filter" ]
-                    [ input
-                        [ value "x"
-                        , type_ "button"
-                        , onClick <| SetFilter ""
+                    [ div [ class "filter-input" ]
+                        [ input
+                            [ value "x"
+                            , type_ "button"
+                            , onClick <| SetFilter ""
+                            ]
+                            []
+                        , input
+                            [ onInput <| SetFilter
+                            , value f
+                            , type_ "search"
+                            , onFocus <| ShowPresets True
+                            , onBlur <| ShowPresets False
+                            , placeholder "Filter messages"
+                            ]
+                            []
                         ]
-                        []
-                    , input
-                        [ onInput <| SetFilter
-                        , value f
-                        , type_ "search"
-                        , onFocus <| ShowPresets True
-                        , onBlur <| ShowPresets False
-                        , placeholder "Filter messages"
-                        ]
-                        []
                     , div [ class "message-presets" ] <|
                         if console.showPresets then
                             [ ul [ class "history" ] (List.map viewMessagePreset console.messageHistory)
