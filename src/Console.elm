@@ -17,7 +17,7 @@ module Console exposing
     )
 
 import Dict exposing (Dict)
-import Html exposing (Html, aside, div, form, hr, input, label, li, p, small, text, ul)
+import Html exposing (Attribute, Html, aside, div, form, hr, input, label, li, p, small, text, ul)
 import Html.Attributes exposing (autocomplete, autofocus, class, for, id, placeholder, required, step, type_, value)
 import Html.Events exposing (onBlur, onClick, onFocus, onInput, onMouseDown, onSubmit)
 
@@ -258,69 +258,20 @@ stringFromBool b =
 -- VIEW
 
 
-viewStringInput : Int -> ArgumentInput -> Html (ConsoleMsg a)
-viewStringInput index input_ =
-    div [ class "argument", class "string" ]
-        [ label [ for input_.name ] [ text <| input_.name ++ " (String)" ]
+viewInput : Int -> String -> List (Attribute (ConsoleMsg a)) -> ArgumentInput -> Html (ConsoleMsg a)
+viewInput index type_ attrs input_ =
+    div [ class "argument", class <| String.toLower type_ ]
+        [ label [ for input_.name ] [ text <| input_.name ++ " (" ++ type_ ++ ")" ]
         , input
-            [ value input_.value
-            , id input_.name
-            , required True
-            , autocomplete False
-            , autofocus <| index == 0
-            , onInput <| \i -> UpdateMessage { input_ | value = i }
-            ]
-            []
-        ]
-
-
-viewIntInput : Int -> ArgumentInput -> Html (ConsoleMsg a)
-viewIntInput index input_ =
-    div [ class "argument", class "int" ]
-        [ label [ for input_.name ] [ text <| input_.name ++ " (Integer)" ]
-        , input
-            [ value input_.value
-            , id input_.name
-            , required True
-            , type_ "number"
-            , autocomplete False
-            , autofocus <| index == 0
-            , onInput <| \i -> UpdateMessage { input_ | value = i }
-            ]
-            []
-        ]
-
-
-viewFloatInput : Int -> ArgumentInput -> Html (ConsoleMsg a)
-viewFloatInput index input_ =
-    div [ class "argument", class "float" ]
-        [ label [ for input_.name ] [ text <| input_.name ++ " (Float)" ]
-        , input
-            [ value input_.value
-            , id input_.name
-            , required True
-            , type_ "number"
-            , autocomplete False
-            , autofocus <| index == 0
-            , step "any"
-            , onInput <| \i -> UpdateMessage { input_ | value = i }
-            ]
-            []
-        ]
-
-
-viewBoolInput : Int -> ArgumentInput -> Html (ConsoleMsg a)
-viewBoolInput index input_ =
-    div [ class "argument", class "bool" ]
-        [ label [ for input_.name ] [ text <| input_.name ++ " (Boolean)" ]
-        , input
-            [ value input_.value
-            , id input_.name
-            , required True
-            , autocomplete False
-            , autofocus <| index == 0
-            , onInput <| \i -> UpdateMessage { input_ | value = i }
-            ]
+            ([ value input_.value
+             , id input_.name
+             , required True
+             , autocomplete False
+             , autofocus <| index == 0
+             , onInput <| \i -> UpdateMessage { input_ | value = i }
+             ]
+                ++ attrs
+            )
             []
         ]
 
@@ -330,22 +281,29 @@ viewCommand index a g =
     case g of
         ArgInt i k ->
             viewCommand (index + 1)
-                (viewIntInput index i :: a)
+                (viewInput index "Int" [ type_ "number" ] i :: a)
                 (k 0)
 
         ArgFloat i k ->
             viewCommand (index + 1)
-                (viewFloatInput index i :: a)
+                (viewInput index
+                    "Float"
+                    [ type_ "number"
+                    , step "any"
+                    ]
+                    i
+                    :: a
+                )
                 (k 0)
 
         ArgBool i k ->
             viewCommand (index + 1)
-                (viewBoolInput index i :: a)
+                (viewInput index "Bool" [] i :: a)
                 (k False)
 
         ArgString i k ->
             viewCommand (index + 1)
-                (viewStringInput index i :: a)
+                (viewInput index "String" [] i :: a)
                 (k "")
 
         Constructor _ ->
