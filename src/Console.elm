@@ -5,6 +5,7 @@ module Console exposing
     , ConsoleMsg
     , Message(..)
     , addMessage
+    , argBool
     , argFloat
     , argInt
     , argString
@@ -64,6 +65,11 @@ argInt name x =
 argFloat : String -> (Float -> Message a) -> Message a
 argFloat name x =
     ArgFloat (ArgumentInput name "") x
+
+
+argBool : String -> (Bool -> Message a) -> Message a
+argBool name =
+    ArgBool (ArgumentInput name "")
 
 
 argString : String -> (String -> Message a) -> Message a
