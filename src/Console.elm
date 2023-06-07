@@ -17,7 +17,7 @@ module Console exposing
     )
 
 import Dict exposing (Dict)
-import Html exposing (Attribute, Html, aside, div, form, hr, input, label, li, p, small, text, ul)
+import Html exposing (Attribute, Html, aside, div, form, hr, input, label, li, p, small, strong, text, ul)
 import Html.Attributes exposing (autocomplete, autofocus, class, for, id, placeholder, required, step, type_, value)
 import Html.Events exposing (onBlur, onClick, onFocus, onInput, onMouseDown, onSubmit)
 
@@ -365,10 +365,18 @@ viewArguments a g =
             a
 
 
-viewMessagePreset : ( String, Message a ) -> Html (ConsoleMsg a)
-viewMessagePreset ( n, m ) =
+viewMessagePreset : String -> ( String, Message a ) -> Html (ConsoleMsg a)
+viewMessagePreset filter ( n, m ) =
     li [ onMouseDown <| SetMessage n m ]
-        [ p [] [ text n ]
+        [ p []
+            [ strong [] [ text filter ]
+            , text <|
+                if not <| String.isEmpty filter then
+                    String.split (String.toLower filter) (String.toLower n) |> List.drop 1 |> String.concat
+
+                else
+                    n
+            ]
         , small []
             (viewArguments [] m
                 |> List.reverse
@@ -416,9 +424,9 @@ viewConsole console =
                         ]
                     , div [ class "message-presets" ] <|
                         if console.showPresets then
-                            [ ul [ class "history" ] (List.map viewMessagePreset console.messageHistory)
+                            [ ul [ class "history" ] (List.map (viewMessagePreset f) console.messageHistory)
                             , hr [] []
-                            , ul [ class "filter-matches" ] (List.map viewMessagePreset (console.messages |> Dict.filter (filterPass f) |> Dict.toList))
+                            , ul [ class "filter-matches" ] (List.map (viewMessagePreset f) (console.messages |> Dict.filter (filterPass f) |> Dict.toList))
                             ]
 
                         else
