@@ -396,12 +396,89 @@ filterPass filter name _ =
     String.contains (String.toLower filter) (String.toLower name)
 
 
+
+-- STYLE
+
+
+type alias Property =
+    ( String, String )
+
+
+type alias Selector =
+    ( String, List Property )
+
+
+
+-- (String, List Property)
+
+
+selectors : List Selector
+selectors =
+    [ ( ".console"
+      , [ ( "padding", "0.5rem" )
+        , ( "display", "flex" )
+        , ( "gap", "0.5rem" )
+        , ( "font-family", "monospace" )
+        , ( "position", "absolute" )
+        ]
+      )
+    , ( ".console input"
+      , [ ( "padding", "0.5rem" ) ]
+      )
+    , ( ".console .filter-input"
+      , [ ( "width", "100%" )
+        , ( "display", "flex" )
+        , ( "gap", "0.5rem" )
+        ]
+      )
+    , ( ".console .message-presets"
+      , [ ( "position", "absolute" )
+        , ( "top", "3rem" )
+        , ( "list-style", "none" )
+        , ( "background-color", "rgba(200, 200, 200, 0.5)" )
+        ]
+      )
+    , ( ".console .message-presets ul"
+      , [ ( "list-style", "none" )
+        ]
+      )
+    , ( ".console .message-presets ul li"
+      , [ ( "padding", "0.5rem" )
+        ]
+      )
+    , ( ".console .message-presets ul li:hover"
+      , [ ( "background", "rgba(255, 255, 255, 0.7)" )
+        , ( "cursor", "pointer" )
+        ]
+      )
+    ]
+
+
+propertyString : Property -> String
+propertyString ( property, value ) =
+    property ++ ": " ++ value ++ ";"
+
+
+selectorString : Selector -> String
+selectorString ( selector, properties ) =
+    selector ++ " {" ++ (properties |> List.map propertyString |> List.intersperse "\n" |> String.concat) ++ "}"
+
+
+styleNode : List Selector -> Html msg
+styleNode cs =
+    Html.node "style"
+        []
+        (List.map (selectorString >> Html.text) cs)
+
+
 viewConsole : Console msg -> Html (ConsoleMsg msg)
 viewConsole console =
-    aside [ class "console" ]
-        [ case console.input of
+    aside
+        [ class "console-container" ]
+        [ styleNode selectors
+        , case console.input of
             MessagePreset n m ->
-                form [ class "message-preset", onSubmit ExecMsg ]
+                form [ class "message-preset", class "console", onSubmit ExecMsg ]
                     ([ input [ onClick <| SetFilter "", type_ "button", value "<" ] []
                      , p [] [ text n ]
                      ]
@@ -410,7 +487,7 @@ viewConsole console =
                     )
 
             Filter f ->
-                form [ class "filter" ]
+                form [ class "filter", class "console" ]
                     [ div [ class "filter-input" ]
                         [ input
                             [ value "x"
