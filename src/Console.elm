@@ -19,7 +19,7 @@ module Console exposing
 
 import Dict exposing (Dict)
 import Html exposing (Attribute, Html, aside, div, form, hr, input, label, li, p, small, strong, text, ul)
-import Html.Attributes exposing (autocomplete, autofocus, class, for, id, placeholder, required, step, type_, value)
+import Html.Attributes exposing (autocomplete, autofocus, class, for, id, placeholder, required, step, style, type_, value)
 import Html.Events exposing (onBlur, onClick, onFocus, onInput, onMouseDown, onSubmit)
 
 
@@ -408,10 +408,6 @@ type alias Selector =
     ( String, List Property )
 
 
-
--- (String, List Property)
-
-
 selectors : List Selector
 selectors =
     [ ( ".console"
@@ -419,11 +415,21 @@ selectors =
         , ( "display", "flex" )
         , ( "gap", "0.5rem" )
         , ( "font-family", "monospace" )
-        , ( "position", "absolute" )
+        , ( "background-color", "rgba(200, 200, 200, 0.5)" )
         ]
+      )
+    , ( ".message-preset"
+      , [ ( "flex-wrap", "wrap" )
+        ]
+      )
+    , ( ".console hr"
+      , [ ( "border-top", "1px solid grey" ) ]
       )
     , ( ".console input"
       , [ ( "padding", "0.5rem" ) ]
+      )
+    , ( ".console input[type=search]"
+      , [ ( "flex", "auto" ) ]
       )
     , ( ".console .filter-input"
       , [ ( "width", "100%" )
@@ -434,6 +440,8 @@ selectors =
     , ( ".console .message-presets"
       , [ ( "position", "absolute" )
         , ( "top", "3rem" )
+        , ( "left", "3rem" )
+        , ( "right", "3rem" )
         , ( "list-style", "none" )
         , ( "background-color", "rgba(200, 200, 200, 0.5)" )
         ]
@@ -474,7 +482,11 @@ styleNode cs =
 viewConsole : Console msg -> Html (ConsoleMsg msg)
 viewConsole console =
     aside
-        [ class "console-container" ]
+        [ class "console-container"
+        , style "position" "absolute"
+        , style "left" "0"
+        , style "right" "0"
+        ]
         [ styleNode selectors
         , case console.input of
             MessagePreset n m ->
