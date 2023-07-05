@@ -442,8 +442,8 @@ selectors =
     , ( ".console .message-presets"
       , [ ( "position", "absolute" )
         , ( "top", "3rem" )
-        , ( "left", "3rem" )
-        , ( "right", "3rem" )
+        , ( "left", "0.5rem" )
+        , ( "right", "0.5rem" )
         , ( "list-style", "none" )
         , ( "background-color", "rgba(200, 200, 200, 0.5)" )
         ]
@@ -504,12 +504,6 @@ viewConsole console =
                 form [ class "filter", class "console" ]
                     [ div [ class "filter-input" ]
                         [ input
-                            [ value "x"
-                            , type_ "button"
-                            , onClick <| SetFilter ""
-                            ]
-                            []
-                        , input
                             [ onInput <| SetFilter
                             , value f
                             , type_ "search"
