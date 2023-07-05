@@ -415,6 +415,8 @@ selectors =
         , ( "display", "flex" )
         , ( "gap", "0.5rem" )
         , ( "font-family", "monospace" )
+        , ( "font-size", "16px" )
+        , ( "color", "#262626" )
         , ( "background-color", "rgba(200, 200, 200, 0.5)" )
         ]
       )
