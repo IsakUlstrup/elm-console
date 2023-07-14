@@ -418,7 +418,8 @@ selectors =
         , ( "font-family", "monospace" )
         , ( "font-size", "14px" )
         , ( "color", "#262626" )
-        , ( "background-color", "rgba(200, 200, 200, 0.5)" )
+
+        -- , ( "background-color", "rgba(200, 200, 200, 0.5)" )
         ]
       )
     , ( ".message-preset"
@@ -489,8 +490,9 @@ viewConsole console =
     aside
         [ class "console-container"
         , style "position" "absolute"
-        , style "left" "0"
-        , style "right" "0"
+        , style "left" "0.5rem"
+        , style "right" "0.5rem"
+        , style "top" "0.5rem"
         ]
         [ styleNode selectors
         , case console.input of
